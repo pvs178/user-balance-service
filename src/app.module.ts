@@ -22,6 +22,12 @@ import { DatabaseSeedService } from './database/database-seed.service';
       entities: [User, TransactionHistory],
       synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV === 'development',
+      extra: {
+        max: parseInt(process.env.DB_POOL_MAX, 10) || 20,
+        min: parseInt(process.env.DB_POOL_MIN, 10) || 5,
+        idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT, 10) || 30000,
+        connectionTimeoutMillis: parseInt(process.env.DB_POOL_CONNECTION_TIMEOUT, 10) || 2000,
+      },
     }),
     TypeOrmModule.forFeature([User, TransactionHistory]),
     UsersModule,
