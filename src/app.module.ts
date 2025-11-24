@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { TransactionHistory } from './entities/transaction-history.entity';
 import { UsersModule } from './users/users.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { DatabaseSeedService } from './database/database-seed.service';
 
 @Module({
   imports: [
@@ -22,9 +23,11 @@ import { TransactionsModule } from './transactions/transactions.module';
       synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV === 'development',
     }),
+    TypeOrmModule.forFeature([User, TransactionHistory]),
     UsersModule,
     TransactionsModule,
   ],
+  providers: [DatabaseSeedService],
 })
 export class AppModule {}
 
