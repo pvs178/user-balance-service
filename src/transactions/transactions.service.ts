@@ -30,7 +30,10 @@ export class TransactionsService {
     return parseFloat(result.balance) || 0;
   }
 
-  async debit(userId: number, amount: number): Promise<TransactionHistory> {
+  async debit(
+    userId: number,
+    amount: number,
+  ): Promise<TransactionHistory & { newBalance: number }> {
     if (amount <= 0) {
       throw new BadRequestException('Amount must be greater than 0');
     }
@@ -63,10 +66,17 @@ export class TransactionsService {
       });
 
       const newBalance = await this.recalculateBalance(userId, queryRunner);
-      await this.usersService.updateBalance(userId, newBalance, queryRunner);
+      const updatedUser = await this.usersService.updateBalance(
+        userId,
+        newBalance,
+        queryRunner,
+      );
 
       await queryRunner.commitTransaction();
-      return transaction;
+      return {
+        ...transaction,
+        newBalance: parseFloat(updatedUser.balance.toString()),
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
