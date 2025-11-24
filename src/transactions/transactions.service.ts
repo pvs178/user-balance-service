@@ -34,7 +34,10 @@ export class TransactionsService {
     userId: number,
     amount: number,
   ): Promise<TransactionHistory & { newBalance: number }> {
+    console.log(`[TransactionsService] Starting debit operation: userId=${userId}, amount=${amount}`);
+    
     if (amount <= 0) {
+      console.log(`[TransactionsService] Invalid amount: ${amount}`);
       throw new BadRequestException('Amount must be greater than 0');
     }
 
@@ -50,12 +53,15 @@ export class TransactionsService {
         .getOne();
 
       if (!user) {
+        console.log(`[TransactionsService] User not found: userId=${userId}`);
         throw new BadRequestException(`User with ID ${userId} not found`);
       }
 
       const currentBalance = await this.recalculateBalance(userId, queryRunner);
+      console.log(`[TransactionsService] Current balance: ${currentBalance}`);
 
       if (currentBalance < amount) {
+        console.log(`[TransactionsService] Insufficient funds: balance=${currentBalance}, requested=${amount}`);
         throw new BadRequestException('Insufficient funds');
       }
 
@@ -73,12 +79,15 @@ export class TransactionsService {
       );
 
       await queryRunner.commitTransaction();
+      console.log(`[TransactionsService] Debit completed: transactionId=${transaction.id}, newBalance=${newBalance}`);
+      
       return {
         ...transaction,
         newBalance: parseFloat(updatedUser.balance.toString()),
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.error(`[TransactionsService] Debit failed: userId=${userId}, amount=${amount}`, error);
       throw error;
     } finally {
       await queryRunner.release();

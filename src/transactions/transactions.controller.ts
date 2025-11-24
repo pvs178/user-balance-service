@@ -13,10 +13,14 @@ export class TransactionsController {
     transactionId: number;
     newBalance: number;
   }> {
+    console.log(`[TransactionsController] Debit request: userId=${debitDto.userId}, amount=${debitDto.amount}`);
+    
     const result = await this.transactionsService.debit(
       debitDto.userId,
       debitDto.amount,
     );
+
+    console.log(`[TransactionsController] Debit successful: transactionId=${result.id}, newBalance=${result.newBalance}`);
 
     return {
       success: true,
